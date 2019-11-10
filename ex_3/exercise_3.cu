@@ -49,7 +49,7 @@ int main()
 	Particle *particles_GPU = 0;
 	cudaError_t cudaStatus;
 
-	printf("Starting GPU particle simulation now");
+	printf("Starting GPU particle simulation now\n");
 
 	//Time before GPU runs update
 	auto current_time = std::chrono::system_clock::now();
