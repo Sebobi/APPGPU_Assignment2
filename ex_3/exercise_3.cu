@@ -19,12 +19,14 @@ void updateParticlesCPU(Particle *particles, int size,float velocityGiven);
 
 void initializeParticles(Particle *particles, int arraySize);
 
-__global__ void UPDATE_PARTICLES(Particle *particles, const float velocityGiven)
+__global__ void UPDATE_PARTICLES(Particle *particles, const float velocityGiven,const int arraySize)
 {
 
 	int i = blockDim.x*blockIdx.x + threadIdx.x;
-	particles[i].velocity.x = velocityGiven*(i+1);
-	particles[i].position.x = particles[i].position.x + particles[i].velocity.x * 1;
+	if (i < arraySize) {
+		particles[i].velocity.x = velocityGiven * (i + 1);
+		particles[i].position.x = particles[i].position.x + particles[i].velocity.x * 1;
+	}
 
 }
 
@@ -32,16 +34,17 @@ int main()
 {
 	const int NUM_PARTICLES = 10000;
 	const int NUM_ITERATIONS = 100000;
-	const int BLOCK_SIZE = 64;
+	const int BLOCK_SIZE = 256;
 
-	const int BLOCKS = NUM_PARTICLES / BLOCK_SIZE + 1;
-	const int REAL_SIZE = BLOCK_SIZE * BLOCKS;
+	const int BLOCKS = (NUM_PARTICLES + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-	Particle particles[REAL_SIZE] = {};
+	Particle particles[NUM_PARTICLES] = {};
 
 
 	const float randomVelocity = rand();
 	float d2 = rand();
+
+
 
 
 	initializeParticles(particles, NUM_PARTICLES);
@@ -56,9 +59,9 @@ int main()
 	auto duration_in_seconds = std::chrono::duration<double>(current_time.time_since_epoch());
 	double gpu_before = duration_in_seconds.count();
 
-	cudaStatus = cudaMalloc((void**)&particles_GPU, REAL_SIZE * sizeof(Particle));
+	cudaStatus = cudaMalloc((void**)&particles_GPU, NUM_PARTICLES * sizeof(Particle));
 
-	cudaStatus = cudaMemcpy(particles_GPU, particles, REAL_SIZE * sizeof(Particle), cudaMemcpyHostToDevice);
+	cudaStatus = cudaMemcpy(particles_GPU, particles, NUM_PARTICLES * sizeof(Particle), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) {
 		printf("malloc failed");
 		goto FREE;
@@ -67,15 +70,15 @@ int main()
 
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 
-		UPDATE_PARTICLES <<<BLOCKS, BLOCK_SIZE >> > (particles_GPU, randomVelocity);
+		UPDATE_PARTICLES <<<BLOCKS, BLOCK_SIZE >>> (particles_GPU, randomVelocity,NUM_PARTICLES);
 
 	}
 
-	Particle gpu_result[REAL_SIZE] = {};
+	Particle gpu_result[NUM_PARTICLES] = {};
 
 	cudaStatus = cudaDeviceSynchronize();
 
-	cudaStatus = cudaMemcpy(gpu_result, particles_GPU, REAL_SIZE * sizeof(Particle), cudaMemcpyDeviceToHost);
+	cudaStatus = cudaMemcpy(gpu_result, particles_GPU, NUM_PARTICLES * sizeof(Particle), cudaMemcpyDeviceToHost);
 
 	if (cudaStatus != cudaSuccess)
 	{

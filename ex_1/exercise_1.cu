@@ -18,5 +18,6 @@ int main()
 	addThreadId <<<1, threads >>> ();
 
 
+	cudaDeviceSynchronize();
     return 0;
 }
