@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <chrono>
+#include <cmath>
 
 struct Particle {
 	float3 position;
@@ -44,7 +45,7 @@ int main()
 	const float randomVelocity = rand();
 	float d2 = rand();
 
-
+	printf("%d\n", fabs(0.2) < fabs(0.5) ? 1 : 0);
 
 
 	initializeParticles(particles, NUM_PARTICLES);
@@ -127,10 +128,12 @@ FREE:
 }
 
 
+
+
 bool compareParticles(Particle *particles1, Particle *particles2, int size) {
 
 	for (int i = 0; i < size; i++) {
-		if ( abs(particles1[i].position.x-particles2[i].position.x) > 0.01 || abs(particles1[i].velocity.x - particles2[i].velocity.x) > 0.01)
+		if (fabs(particles1[i].position.x-particles2[i].position.x) > 0.01 || fabs(particles1[i].velocity.x - particles2[i].velocity.x) > 0.01)
 			return false;
 	}
 	return true;

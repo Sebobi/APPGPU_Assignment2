@@ -3,7 +3,7 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
-
+#include <cmath>
 #include <cstdlib>
 
 
@@ -76,7 +76,7 @@ int main()
 	bool success = true;
 
 	for (int i = 0; i < ARRAY_SIZE; i++) {
-		if (abs(gpu_result[i] - y[i]) <= 0.00000001) {
+		if (fabs(gpu_result[i] - y[i]) <= 0.00000001) {
 			//We're good
 		}
 		else {
