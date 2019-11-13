@@ -64,8 +64,8 @@ int main()
 
 	cudaStatus = cudaMemcpy(particles_GPU, particles, NUM_PARTICLES * sizeof(Particle), cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) {
-		printf("malloc failed");
-		goto FREE;
+		printf("malloc failed\n");
+		return 1;
 	}
 
 
@@ -83,7 +83,8 @@ int main()
 
 	if (cudaStatus != cudaSuccess)
 	{
-		goto FREE;
+		cudaFree(particles_GPU);
+		return 1;
 	}
 
 	current_time = std::chrono::system_clock::now();
@@ -118,8 +119,6 @@ int main()
 		printf(" Not the same...\n");
 	}
 
-
-FREE:
 	cudaFree(particles_GPU);
 
 
